@@ -1,0 +1,7 @@
+{
+    "name": "svt/rozvrhxml",
+    "description": "Parser and importer of FMPH timetable data",
+    "autoload": {
+        "psr-0": {"SVT\\RozvrhXML": "lib/"}
+    }
+}
