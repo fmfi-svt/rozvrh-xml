@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Priklad XML dokumentu popisujuceho rozvrh.
+
+  Tento XML dokument obsahuje vsetky data rozvrhu a
+  do Candle sa importuje vzdy cely, avsak Candle automaticky
+  vyraba diff s poslednou importovanou verziou a ten aplikuje
+  na data v databaze. Preto je potrebne, aby id-cka boli stabilne
+  medzi jednotlivymi updatami rozvrhu, t.j. aby sa id-cko jedneho
+  objektu nemenilo.
+  
+  Dolezite je to z toho dovodu, ze Candle uklada rozvrhy vyrabane
+  pouzivatelmi, teda rozsiruje datovy model oproti tomu, co je uvedene
+  v xml-ku. Ak by sa id-cka menili, nefungovali by pouzivatelske rozvrhy.
+  Id-cka kazdeho typu entity *su* case sensitive a nezdielaju namespace
+  s inym typom entity.
+
+  Atributy:
+    verzia: cas vo formate YYYYMMDDHHMMSS
+    skolrok: 20YY/ZZ (ZZ = YY + 1)
+    semester: zimný|letný
+-->
+<rozvrh verzia="20121012181931" skolrok="2012/13" semester="zimný">
+  <!--
+    Typy hodin. Id-cka pouzivane z tejto sekcie su v Candle osetrovane
+    specialne - vybera sa podla nich ikona vedla hodin. XML subor moze
+    specifikovat ine id-cka, avsak nebude zobrazena ikona.
+  -->
+  <typy>
+    <typ id="p" popis="Prednáška"/>
+    <typ id="c" popis="Cvičenie"/>
+    <typ id="k" popis="Kurz"/>
+    <typ id="v" popis="Výber/Vol"/>
+    <typ id="s" popis="Seminár"/>
+    <typ id="l" popis="Labák"/>
+    <typ id="n" popis="Nezadaný typ"/>
+  </typy>
+  <!--
+    Typy miestnosti. Id-cka pouzivane z tejto sekcie su tiez v Candle
+    osetrovane specialne pri vyhladavani volnych miestnosti.
+    
+    Seminarne, prakticke, externe miestnosti a specialne miestnosti (bez typu)
+    sa nezobrazuju pri vyhladavani volnych miestnosti.
+  -->
+  <typymiestnosti>
+    <typmiestnosti id="s" popis="Seminárna miestnosť"/>
+    <typmiestnosti id="l" popis="Praktická učebňa"/>
+    <typmiestnosti id="e" popis="Externá miestnosť"/>
+    <typmiestnosti id="u" popis="Učebňa"/>
+    <typmiestnosti id="0" popis=""/>
+  </typymiestnosti>
+  <!--
+    Informacie o uciteloch.
+  -->
+  <ucitelia>
+    <ucitel id="UCI1">
+      <priezvisko>Hraško</priezvisko>
+      <meno>Janko</meno>
+      <iniciala>JH</iniciala>
+      <katedra>KI</katedra>
+      <oddelenie>FMFI</oddelenie>
+      <login>hrasko47</login>
+    </ucitel>
+    <!-- ... -->
+  </ucitelia>
+  <!--
+    Informacie o miestnostiach.
+    
+    Nazov miestnosti musi byt unikatny a pouziva sa ako identifikator.
+    Kapacita miestnosti = pocet ludi, ktori sa tam vmestia.
+    Typ miestnosti je id typu miestnosti definovane vyssie.
+    AIS kod je nazov miestnosti v AISe (tusim sa zatial v Candle nepouziva).
+  -->
+  <miestnosti>
+    <miestnost>
+      <nazov>A</nazov>
+      <kapacita>330</kapacita>
+      <typ>u</typ>
+      <aiskod>FMFI PP A</aiskod>
+    </miestnost>
+    <!-- ... -->
+  </miestnosti>
+  <!--
+    Informacie o predmetoch.
+  -->
+  <predmety>
+    <predmet id="PRED1">
+      <nazov>Mechanika</nazov>
+      <kod>FMFI.KAFZM/1-FYZ-110/00</kod>
+      <kratkykod>1-FYZ-110</kratkykod>
+      <kredity>7</kredity>
+      <rozsah>6K</rozsah>
+    </predmet>
+    <!-- ... -->
+  </predmety>
+  <!--
+    Informacie o hodinach.
+    
+    Casy su vyjadrene ako pocet minut od zaciatku dna.
+    Candle pri zobrazovani rozvrhu casy zaokruhluje na 5 minut.
+    
+    Id: Dynamicke ID miestnosti. Moze sa zmenit pri kazdej zmene hodiny.
+        Tento atribut sa v Candle nepouziva.
+    Den: pon|uto|str|stv|pia
+    Zaciatok: cas zaciatku hodiny
+    Koniec: cas konca hodiny. Obvykle neobsahuje prestavku po hodine
+            (i.e. na matfyze su 50 minutove bloky, pricom jednohodinovka
+            ma koniec = zaciatok + 45, dvojhodinovka ma koniec = zaciatok + 90
+            atd., aj ked tento zvyk moze byt poruseny, ak treba)
+    Miestnost: nazov miestnosti (miestnost musi byt definovana vyssie v xml)
+    Trvanie: Pocet matfyznych blokov, ktore su vyuzite.
+             i.e. (koniec-zaciatok) / 45
+             V Candle sa nepouziva.
+    Predmet: ID predmetu, ktory sa na tejto hodine vyucuje
+    Ucitelia: Ciarkami odddeleny (bez medzier) zoznam ID ucitelov, ktori
+              vycuju tuto hodinu
+    Kruzky: Ciarkami oddeleny zoznam nazvov kruzkov, ktore
+            maju tuto hodinu zaradenu. Kruzky su definovane iba nazvom.
+    Typ: ID typu hodiny, ktory je definovany vyssie v xml
+    OldID: Permanentne ID hodiny. Toto sa pouziva ako jednoznacny
+           identifikator hodiny v Candle. Medzi jednotlivymi verziami
+           xml dat musi byt pre danu hodinu rovnaky, aj ked sa zmenia
+           niektore datove polozky hodiny. Tato polozka nie je ID
+           len z historickych dovodov.
+    Zviazane hodiny: Ciarkami oddeleny (bez medzie) zoznam ID hodin,
+                     ktore su zviazane s touto hodinou. Zviazana hodina
+                     je taka, ktora ma rovnaky cas a miestnost, ale ostatne
+                     atributy moze mat rozne. Pouziva sa to najma tak,
+                     ked ma jeden predmet viac kodov/nazvov a pod.
+                     Tento atribut sa momentalne v Candle nevyuziva.
+    Zviazane old ID: To iste ako zviazane hodiny, ale pouziva sa OldID
+                     namiesto ID. Tento atribut sa importuje do Candle,
+                     ale momentalne sa nijak inak nevyuziva.
+  -->
+  <hodiny>
+    <hodina id="1">
+      <den>pon</den>
+      <zaciatok>840</zaciatok>
+      <koniec>885</koniec>
+      <miestnost>A</miestnost>
+      <trvanie>1</trvanie>
+      <predmet>PRED1</predmet>
+      <ucitelia>UCI1</ucitelia>
+      <kruzky>1f1,1f2</kruzky>
+      <typ>p</typ>
+      <oldid>1</oldid>
+      <zviazanehodiny></zviazanehodiny>
+      <zviazaneoldid></zviazaneoldid>
+    </hodina>
+    <!-- ... -->
+  </hodiny>
+</rozvrh>

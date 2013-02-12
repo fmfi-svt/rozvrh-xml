@@ -1,1 +1,3 @@
 Parser a importovac rozvrhovych dat z XML-ka
+
+Subor `rozvrh-format.xml` obsahuje priklad, ako vyzera XML subor s rozvrhovymi datami.
