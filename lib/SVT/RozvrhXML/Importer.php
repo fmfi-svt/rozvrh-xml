@@ -40,11 +40,11 @@ class Importer implements Consumer
   protected $insert;
 
   protected $rozvrhData;
-  
+
   /**
-   * 
+   *
    * @return array(xml-elem-type => array(
-   *    'table-name' => table name, 
+   *    'table-name' => table name,
    *    'columns' => array(
    *        column name => sql column type,
    *    ),
@@ -140,7 +140,7 @@ class Importer implements Consumer
           ),
       );
   }
-  
+
   public function consumeRozvrh(array $location, array $rozvrh) {
       $this->rozvrhData = $rozvrh;
   }
@@ -148,7 +148,7 @@ class Importer implements Consumer
   protected function convertTypHodiny(array $location, array $typHodiny) {
       return array('name' => $typHodiny['popis'], 'code' => $typHodiny['id']);
   }
-  
+
   public function consumeTypHodiny(array $location, array $typHodiny) {
     $this->insert['typ-hodiny']->execute($this->convertTypHodiny($location, $typHodiny));
   }
@@ -156,7 +156,7 @@ class Importer implements Consumer
   protected function convertTypMiestnosti(array $location, array $typMiestnosti) {
       return array('name' => $typMiestnosti['popis'], 'code' => $typMiestnosti['id']);
   }
-  
+
   public function consumeTypMiestnosti(array $location, array $typMiestnosti) {
     $this->insert['typ-miestnosti']->execute($this->convertTypMiestnosti($location, $typMiestnosti));
   }
@@ -178,7 +178,7 @@ class Importer implements Consumer
           'login' => $login,
       );
   }
-  
+
   public function consumeUcitel(array $location, array $ucitel) {
     $this->insert['ucitel']->execute($this->convertUcitel($location, $ucitel));
   }
@@ -190,7 +190,7 @@ class Importer implements Consumer
           'capacity' => (int) $miestnost['kapacita'],
       );
   }
-  
+
   public function consumeMiestnost(array $location, array $miestnost) {
     $this->insert['miestnost']->execute($this->convertMiestnost($location, $miestnost));
   }
@@ -199,13 +199,13 @@ class Importer implements Consumer
     return array(
         'name' => $predmet['nazov'],
         'code' => $predmet['kod'],
-        'short_code' => $predmet['kratkykod'],
+        'short_code' => isset($predmet['kratkykod']) ? $predmet['kratkykod'] : null,
         'credit_value' => (int) $predmet['kredity'],
         'rozsah' => isset($predmet['rozsah']) ? $predmet['rozsah'] : null,
         'external_id' => $predmet['id'],
     );
   }
-  
+
   public function consumePredmet(array $location, array $predmet) {
     $this->insert['predmet']->execute($this->convertPredmet($location, $predmet));
   }
@@ -218,7 +218,7 @@ class Importer implements Consumer
     else {
         $note = null;
     }
-    
+
     return array(
         'day' => $this->dayFromCode($hodina['den']),
         'start' => (int) $hodina['zaciatok'],
@@ -230,7 +230,7 @@ class Importer implements Consumer
         'note' => $note,
     );
   }
-  
+
   protected function convertHodinaUcitel(array $location, array $convertedHodina,
           $ucitelId) {
       return array(
@@ -238,7 +238,7 @@ class Importer implements Consumer
           'teacher_external_id' => $this->mangleExtId($ucitelId),
       );
   }
-  
+
   protected function convertHodinaKruzok(array $location, array $convertedHodina,
           $kruzok) {
       return array(
@@ -246,7 +246,7 @@ class Importer implements Consumer
           'student_group' => $kruzok,
       );
   }
-  
+
   protected function convertHodinaHodina(array $location, array $convertedHodina,
           $zviazanaHodina) {
       return array(
@@ -254,11 +254,11 @@ class Importer implements Consumer
           'lesson2_external_id' => (int) $zviazanaHodina,
       );
   }
-  
+
   public function consumeHodina(array $location, array $hodina) {
     $convertedHodina = $this->convertHodina($location, $hodina);
     $this->insert['hodina']->execute($convertedHodina);
-    
+
     if (isset($hodina['ucitelia'])) {
         $ucitelia = explode(',', $hodina['ucitelia']);
         foreach ($ucitelia as $ucitelId) {
@@ -327,7 +327,7 @@ class Importer implements Consumer
 
   protected function createPrimaryKeys() {
       $tables = $this->getTableDefinitions();
-      
+
       foreach ($tables as $table) {
           if (isset($table['primary-key'])) {
               $sql = 'ALTER TABLE ';
@@ -380,7 +380,7 @@ class Importer implements Consumer
           'semester' => $this->rozvrhData['semester'],
       );
   }
-  
+
   protected function dayFromCode($code) {
     $days = array('pon'=>0, 'uto'=>1, 'str'=>2, 'stv'=>3, 'pia'=>4);
     return $days[$code];
